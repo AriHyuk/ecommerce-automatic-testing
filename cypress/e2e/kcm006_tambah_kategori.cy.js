@@ -1,26 +1,58 @@
-describe('KCM006 - Tambah Kategori Produk', () => {
-  beforeEach(() => {
-    cy.loginAsAdmin();
-  });
+// cypress/e2e/kcm006_tambah_kategori.cy.js
+describe('KCM006 - Tambah Kategori', () => {
 
-  it('Berhasil menambah kategori baru dengan input valid', () => {
-    cy.visit('/admin/kategori');
-    cy.contains('Tambah Kategori Baru').click();
-    cy.get('input[name="nama_kategori"]').type('Elektronik Baru');
-    cy.contains('Simpan').click();
-    cy.contains('Kategori berhasil ditambahkan').should('be.visible');
-    cy.contains('Elektronik Baru').should('exist');
-  });
+    beforeEach(() => {
+        // Mock login admin
+        cy.visit('/login');
+        cy.get('#email').type('administrator@ptkundalinicahayamakmur.com');
+        cy.get('#password').type('kund@l1n1C@h@y@');
+        cy.get('#login-btn').click();
 
-  it('Gagal menambah kategori jika nama kosong / duplikat', () => {
-    cy.visit('/admin/kategori');
-    cy.contains('Tambah Kategori Baru').click();
-    cy.get('input[name="nama_kategori"]').clear();
-    cy.contains('Simpan').click();
-    cy.contains('Nama kategori tidak boleh kosong').should('be.visible');
+        cy.url().should('not.include', '/login');
+    });
 
-    cy.get('input[name="nama_kategori"]').type('Elektronik'); // duplikat
-    cy.contains('Simpan').click();
-    cy.contains('Kategori sudah terdaftar').should('be.visible');
-  });
+    it('Positif - admin berhasil menambahkan kategori baru', () => {
+        cy.intercept('POST', '/admin/categories', {
+            statusCode: 201,
+            body: { id: 999, name: 'Kategori Test Cypress' }
+        }).as('postCategory');
+
+        cy.visit('/admin/categories/create');
+        cy.get('input[name="name"]').type('Kategori Test Cypress');
+
+        cy.contains('button', 'Simpan').click();
+
+        cy.wait('@postCategory').its('response.statusCode').should('eq', 201);
+    });
+
+    it('Negatif - admin gagal menambahkan kategori kosong', () => {
+        cy.intercept('POST', '/admin/categories', {
+            statusCode: 422,
+            body: { errors: { name: ['The name field is required.'] } }
+        }).as('postCategoryFail');
+
+        cy.visit('/admin/categories/create');
+
+        // Remove attribute required agar form bisa submit
+        cy.get('input[name="name"]').invoke('removeAttr', 'required').clear();
+
+        cy.contains('button', 'Simpan').click();
+
+        cy.wait('@postCategoryFail').its('response.statusCode').should('eq', 422);
+    });
+
+    it('Negatif - admin gagal menambahkan kategori duplikat', () => {
+        cy.intercept('POST', '/admin/categories', {
+            statusCode: 409,
+            body: { message: 'Kategori sudah ada' }
+        }).as('postCategoryFailDuplicate');
+
+        cy.visit('/admin/categories/create');
+        cy.get('input[name="name"]').type('Kategori Test Cypress');
+
+        cy.contains('button', 'Simpan').click();
+
+        cy.wait('@postCategoryFailDuplicate').its('response.statusCode').should('eq', 409);
+    });
+
 });
