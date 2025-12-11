@@ -1,11 +1,10 @@
-// cypress/e2e/kcm006_tambah_kategori.cy.js
-describe('KCM006 - Tambah Kategori', () => {
+describe('KCM006 - Tambah Kategori Produk', () => {
 
     beforeEach(() => {
         // Mock login admin
         cy.visit('/login');
-        cy.get('#email').type('administrator@ptkundalinicahayamakmur.com');
-        cy.get('#password').type('kund@l1n1C@h@y@');
+        cy.get("#email").type(Cypress.env("adminEmail"));
+        cy.get("#password").type(Cypress.env("adminPassword"));
         cy.get('#login-btn').click();
 
         cy.url().should('not.include', '/login');
