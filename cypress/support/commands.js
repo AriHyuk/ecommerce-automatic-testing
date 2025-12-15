@@ -26,67 +26,38 @@
 
 Cypress.Commands.add("adminLogin", () => {
   cy.visit("/login");
-  
-  // Cek halaman login
-  cy.get('body').then(($body) => {
-    // Cari input email dengan berbagai kemungkinan selector
-    if ($body.find('input[name="email"]').length > 0) {
-      cy.get('input[name="email"]').type(Cypress.env("adminEmail"));
-    } else if ($body.find('input[type="email"]').length > 0) {
-      cy.get('input[type="email"]').type(Cypress.env("adminEmail"));
-    } else if ($body.find('#email').length > 0) {
-      cy.get('#email').type(Cypress.env("adminEmail"));
-    }
-    
-    // Cari input password
-    if ($body.find('input[name="password"]').length > 0) {
-      cy.get('input[name="password"]').type(Cypress.env("adminPassword"));
-    } else if ($body.find('input[type="password"]').length > 0) {
-      cy.get('input[type="password"]').type(Cypress.env("adminPassword"));
-    } else if ($body.find('#password').length > 0) {
-      cy.get('#password').type(Cypress.env("adminPassword"));
-    }
-    
-    // Cari tombol submit
-    if ($body.find('button[type="submit"]').length > 0) {
-      cy.get('button[type="submit"]').click();
-    } else if ($body.find('button:contains("Login")').length > 0) {
-      cy.contains('button', 'Login').click();
-    } else if ($body.find('button:contains("Masuk")').length > 0) {
-      cy.contains('button', 'Masuk').click();
-    }
-  });
-  
-  // Tunggu redirect
-  cy.wait(3000);
-  
-  // Verifikasi login berhasil
-  cy.url().should("not.include", "/login");
+
+  cy.get('input[name="email"], input[type="email"], #email', { timeout: 10000 })
+    .first()
+    .clear()
+    .type(Cypress.env("adminEmail"));
+
+  cy.get('input[name="password"], input[type="password"], #password')
+    .first()
+    .clear()
+    .type(Cypress.env("adminPassword"), { log: false });
+
+  cy.contains('button', /login|masuk/i).click();
+
+  // tunggu redirect beneran
+  cy.url({ timeout: 10000 }).should("not.include", "/login");
 });
+
 
 Cypress.Commands.add("userLogin", () => {
   cy.visit("/login");
-  
-  cy.get('body').then(($body) => {
-    if ($body.find('input[name="email"]').length > 0) {
-      cy.get('input[name="email"]').type(Cypress.env("userEmail"));
-    } else if ($body.find('input[type="email"]').length > 0) {
-      cy.get('input[type="email"]').type(Cypress.env("userEmail"));
-    }
-    
-    if ($body.find('input[name="password"]').length > 0) {
-      cy.get('input[name="password"]').type(Cypress.env("userPassword"));
-    } else if ($body.find('input[type="password"]').length > 0) {
-      cy.get('input[type="password"]').type(Cypress.env("userPassword"));
-    }
-    
-    if ($body.find('button[type="submit"]').length > 0) {
-      cy.get('button[type="submit"]').click();
-    } else if ($body.find('button:contains("Login")').length > 0) {
-      cy.contains('button', 'Login').click();
-    }
-  });
-  
-  cy.wait(3000);
-  cy.url().should("not.include", "/login");
+
+  cy.get('input[name="email"], input[type="email"], #email', { timeout: 10000 })
+    .first()
+    .clear()
+    .type(Cypress.env("userEmail"));
+
+  cy.get('input[name="password"], input[type="password"], #password')
+    .first()
+    .clear()
+    .type(Cypress.env("userPassword"), { log: false });
+
+  cy.contains('button', /login|Masuk/i).click();
+
+  cy.url({ timeout: 10000 }).should("not.include", "/login");
 });
