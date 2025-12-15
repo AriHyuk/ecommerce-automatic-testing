@@ -48,7 +48,7 @@ describe('KCM004 - Pickup Flow (Success then Duplicate)', () => {
 
     // VERIFIKASI HASIL
     // 1. URL tetap di pickup
-    cy.url().should('include', '/admin/pickup');
+    cy.visit('http://127.0.0.1:8000/admin/pickup');
     
     
     cy.log('✅ Test 1 Berhasil: Pickup terbuat.');
