@@ -37,7 +37,7 @@ Cypress.Commands.add("adminLogin", () => {
     .clear()
     .type(Cypress.env("adminPassword"), { log: false });
 
-  cy.contains('button', /login|masuk/i).click();
+  cy.contains('button', /login|Masuk/i).click();
 
   // tunggu redirect beneran
   cy.url({ timeout: 10000 }).should("not.include", "/login");
