@@ -9,7 +9,7 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
-    baseUrl: 'http://127.0.0.1:8021', // Sesuaikan jika ada
+    baseUrl: 'http://127.0.0.1:8000', // Sesuaikan jika ada
     viewportWidth: 1280,
     viewportHeight: 720,
   },
