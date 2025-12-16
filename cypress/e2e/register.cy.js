@@ -14,7 +14,7 @@ describe('KCM001 - Pengujian Register', () => {
     cy.viewport(1280, 720);
     // Masuk ke halaman register (Sesuaikan URL jika beda)
     // Jika tidak ada akses langsung, bisa via Home -> Klik Daftar
-    cy.visit('https://ptkundalinicahayamakmur.com/register'); 
+    cy.visit('http://127.0.0.1:8000/register'); 
   });
 
   // ============================================================

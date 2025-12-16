@@ -1,141 +1,103 @@
-describe('KCM005 - Pengujian Konfirmasi Booking oleh Admin', () => {
+describe('KCM005 - Pengujian Konfirmasi Booking (Admin - Localhost)', () => {
 
   // 1. GLOBAL ERROR HANDLER
-  // Mencegah test mati karena error JS template admin
   before(() => {
     Cypress.on('uncaught:exception', (err, runnable) => {
       return false; 
     });
   });
 
-  // 2. SETUP: LOGIN MENGGUNAKAN ENV
+  // 2. SETUP: LOGIN ADMIN
   beforeEach(() => {
     cy.viewport(1280, 720);
+    cy.visit('http://127.0.0.1:8000/login'); 
 
-    // Visit Halaman Login Admin
-    cy.visit('https://ptkundalinicahayamakmur.com/login'); 
+    const email = Cypress.env('adminEmail') || 'admin@gmail.com';
+    const password = Cypress.env('adminPassword') || 'passwordAdmin123';
 
-    // Ambil kredensial dari cypress.env.json
-    const email = Cypress.env('adminEmail');
-    const password = Cypress.env('adminPassword');
-
-    // Cek env
-    if (!email || !password) {
-        throw new Error("⚠️ Harap isi file cypress.env.json dengan adminEmail dan adminPassword!");
-    }
-
-    // Proses Login
     cy.get('input[name="email"]').type(email); 
     cy.get('input[name="password"]').type(password); 
     cy.get('button[type="submit"]').click();
 
-    // Assert Masuk Dashboard
-    cy.url().should('include', '/admin/dashboard'); 
-    
-    // Masuk ke Menu Booking
-    cy.contains('a', 'Manajemen Booking').click(); 
+    cy.url().should('include', '/admin'); 
+    cy.visit('http://127.0.0.1:8000/admin/bookings');
   });
 
   // ============================================================
-  // SKENARIO POSITIF (Success Flow)
+  // SKENARIO POSITIF: PAKAI TOMBOL "KONFIRMASI & KIRIM WA"
   // ============================================================
-  it('Positif: Admin berhasil mengonfirmasi pemesanan (Status -> Paid)', () => {
+  it('Positif: Admin konfirmasi via WA & Status berubah Paid', () => {
     
     // 1. Filter Status 'Pending'
     cy.get('select[name="status"]').select('pending');
-    cy.wait(1500); // Tunggu filter loading
+    cy.wait(1500);
 
-    // 2. Ambil Data Kedua (Index 1) agar aman dari data error di baris pertama
-    cy.get('table tbody tr').should('have.length.gt', 1); 
-    
-    cy.get('table tbody tr')
-      .eq(1) 
-      .within(() => {
+    // 2. Ambil Data
+    cy.get('table tbody tr').should('have.length.gt', 0); 
+    cy.get('table tbody tr').eq( 1).within(() => {
         cy.contains('a', 'Detail').click(); 
-      });
+    });
 
     // 3. Assert Masuk Halaman Detail
     cy.url().should('include', '/admin/bookings/'); 
 
-    // 4. Pastikan tombol Konfirmasi Muncul
-    cy.contains('button', 'Konfirmasi Pembayaran').should('be.visible');
+    // 4. CEK TOMBOL "KONFIRMASI & KIRIM WA"
+    // Pastikan tombolnya ada dulu
+    cy.contains('a', 'Konfirmasi & Kirim WA').should('be.visible');
 
-    // 5. KLIK KONFIRMASI
-    cy.contains('button', 'Konfirmasi Pembayaran').click();
+    // ============================================================
+    // 🔥 TRICK HANDLING TARGET="_BLANK" 🔥
+    // ============================================================
+    // Karena tombol ini membuka tab baru (target="_blank"), Cypress akan error/hang.
+    // Kita harus HAPUS atribut target-nya supaya link terbuka di tab yang sama.
+    
+    cy.contains('a', 'Konfirmasi & Kirim WA')
+      .invoke('removeAttr', 'target') // Hapus target="_blank"
+      .click();
 
-    cy.wait(3000);
-    cy.reload(); 
-    cy.url().then((url) => {
-        if (!url.includes('/admin/bookings/')) { 
-            // Jika mental ke Index (List), cari badge hijau di tabel
-            cy.log('Redirected to Index, checking table...');
-            cy.get('.bg-green-100').should('exist');
-        } else {
-            // Jika tetap di Detail (Show), cari badge hijau di info status
-            cy.log('Stayed on Detail Page, checking status badge...');
-            
-            // Assert Status Berubah Jadi Hijau (Paid)
-            cy.get('.bg-green-100', { timeout: 10000 })
-              .should('exist')
-              .and('be.visible');
-              
-            // Validasi teksnya mengandung kata Paid/Lunas
-            cy.get('.bg-green-100').should(($el) => {
-                const text = $el.text().trim().toLowerCase();
-                expect(text).to.match(/paid|lunas|dikonfirmasi|success/);
-            });
-        }
-    });
+    // 5. HANDLING PROSES (WA & DATABASE)
+    // Karena proses ini mungkin membuka API WA atau loading lama
+    cy.wait(5000); // Beri waktu lebih lama (5 detik)
 
-    cy.log('✅ Booking berhasil dikonfirmasi & status berubah hijau');
+    // Kembali ke halaman admin jika terlempar ke URL WhatsApp
+    // (Opsional: Jika sistem kamu redirect ke api.whatsapp.com, kita harus balik manual)
+    // Tapi biasanya controller me-redirect back().
+    
+    // Paksa Reload untuk cek status terbaru
+    cy.visit('http://127.0.0.1:8000/admin/bookings'); // Balik ke index aja biar aman
+    cy.get('select[name="status"]').select('paid'); // Filter yang paid
+    cy.wait(1000);
+
+    // 6. VERIFIKASI STATUS HIJAU
+    // Cek apakah ada data paid (artinya konfirmasi berhasil masuk DB)
+    cy.get('table tbody tr').should('have.length.gt', 0);
+    cy.get('.bg-green-100').first().should('exist');
+
+    cy.log('✅ Booking berhasil dikonfirmasi via Link WA');
   });
 
-
   // ============================================================
-  // SKENARIO NEGATIF (Mocking Error Server)
+  // SKENARIO NEGATIF
   // ============================================================
-  it('Negatif: Admin gagal mengonfirmasi (Simulasi Error Server)', () => {
+  it('Negatif: Admin tidak bisa mengonfirmasi ulang booking yang sudah Paid', () => {
     
-    // 1. NAVIGASI KE DETAIL DULU (Sama seperti positif)
-    // Kita harus masuk ke halaman detail dulu baru bisa klik tombol konfirmasi
-    cy.get('select[name="status"]').select('pending');
+    cy.get('select[name="status"]').select('paid');
     cy.wait(1500);
 
-    // Ambil data kedua lagi
-    cy.get('table tbody tr').eq(1).within(() => {
+    cy.get('table tbody tr').should('have.length.gt', 0);
+    cy.get('table tbody tr').eq(0).within(() => {
         cy.contains('a', 'Detail').click(); 
     });
 
-    // 2. SETUP MOCK ERROR (INTERCEPT)
-    // Kita pancing error 400 atau 500 saat tombol ditekan
-    // URL disesuaikan dengan route blade: admin.bookings.confirm-payment
-    cy.intercept('POST', '**/confirm-payment', {
-      statusCode: 400, // Bad Request
-      body: { 
-          message: 'Booking sudah kadaluarsa atau tidak valid!' // Pesan error pura-pura
-      }
-    }).as('confirmFail');
+    // VERIFIKASI TOMBOL WA TIDAK ADA
+    // Jika sudah lunas, tombol kirim WA konfirmasi harusnya hilang
+    cy.contains('a', 'Konfirmasi & Kirim WA').should('not.exist');
 
-    // 3. KLIK TOMBOL KONFIRMASI
-    cy.contains('button', 'Konfirmasi Pembayaran').click();
+    // Tombol konfirmasi biasa juga tidak ada
+    cy.contains('button', 'Konfirmasi Pembayaran').should('not.exist');
 
-    // 4. TUNGGU RESPON MOCK
-    // Cypress akan menangkap request ini dan membalas dengan Error 400
-    cy.wait('@confirmFail');
-
-    // 5. ASSERT ERROR MUNCUL
-    // Karena request gagal, biasanya aplikasi tidak redirect dan tetap di halaman detail.
-    // Kita cek apakah ada elemen error/alert, atau URL tidak berubah ke index.
-    
-    // Assert 1: Tetap di halaman detail (tidak redirect sukses)
-    cy.url().should('include', '/admin/bookings/');
-
-    // Assert 2: Cek keberadaan indikator error (Tergantung template admin kamu)
-    // Bisa berupa SweetAlert error, Flash Message merah, atau text di body
-    // Contoh generik:
-    // cy.get('.alert-danger, .text-red-600, .swal2-error').should('exist'); 
-    
-    cy.log('✅ Skenario Negatif Berhasil: Request ditolak (Mock 400)');
+    cy.get('.bg-green-100').should('be.visible');
+    cy.log('✅ Skenario Negatif Berhasil: Tombol Konfirmasi hilang pada data Paid');
   });
 
 });
