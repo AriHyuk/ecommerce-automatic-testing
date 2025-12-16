@@ -3,7 +3,7 @@ describe('Flow Invoice Lengkap', () => {
     it('Login → Pesanan → Detail → Invoice → Cetak', () => {
 
         // LOGIN
-        cy.visit('https://ptkundalinicahayamakmur.com/login');
+        cy.visit('http://127.0.0.1:8000/login');
         cy.get('#email').type('ariawl0209@gmail.com');
         cy.get('#password').type('AriHyuk123');
         cy.get('#login-btn').click();

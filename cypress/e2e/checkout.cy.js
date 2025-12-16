@@ -14,7 +14,7 @@ describe('Checkout Flow Toko Gewe (Final Fix)', () => {
     // ============================================================
     // A. LOGIN & MASUK TOKO
     // ============================================================
-    cy.visit('https://ptkundalinicahayamakmur.com/');
+    cy.visit('http://127.0.0.1:8000/');
 
     cy.get('body').then(($body) => {
         if ($body.find('a:contains("Login")').length > 0) {
@@ -23,7 +23,7 @@ describe('Checkout Flow Toko Gewe (Final Fix)', () => {
             cy.get('#password').type('AriHyuk123');
             cy.get('button[type="submit"]').click();
             cy.url().should('not.include', '/login');
-            cy.visit('https://ptkundalinicahayamakmur.com/');
+            cy.visit('http://127.0.0.1:8000/');
         }
     });
 
