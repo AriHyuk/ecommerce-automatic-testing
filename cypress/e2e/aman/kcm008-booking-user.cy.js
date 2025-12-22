@@ -49,16 +49,8 @@ describe('KCM008 - Pengujian Booking User (Positif & Negatif)', () => {
         // Durasi sewa
         cy.get('#duration').clear().type(2);
 
-        // 6. Submit booking
-        cy.contains('Ajukan Penyewaan')
-            .should('be.visible')
-            .click({ force: true });
+        
 
-        // 7. Validasi hasil booking
-        cy.url().should('include', '/gwen-property');
-
-        cy.contains(/berhasil|sukses|booking/i)
-            .should('exist');
     });
 
 

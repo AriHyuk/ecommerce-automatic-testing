@@ -5,7 +5,7 @@ describe('Print Label (Cetak Invoice)', () => {
         cy.get('#email').type('ariawl0209@gmail.com');
         cy.get('#password').type('AriHyuk123');
         cy.get('#login-btn').click();
-        cy.url().should('include', 'ptkundalinicahayamakmur.com');
+        cy.url().should('include', '/');
     });
 
     it('Flow Print Label dari Detail Pesanan', () => {

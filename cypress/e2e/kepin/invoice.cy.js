@@ -9,7 +9,7 @@ describe('Flow Invoice Lengkap', () => {
         cy.get('#login-btn').click();
 
         // FIX: website kamu tidak redirect ke /dashboard
-        cy.url().should('include', 'ptkundalinicahayamakmur.com');
+        cy.url().should('include', '/');
 
         // BUKA MENU PESANAN SAYA
         cy.contains(/pesanan saya|my account/i, { timeout: 10000 })

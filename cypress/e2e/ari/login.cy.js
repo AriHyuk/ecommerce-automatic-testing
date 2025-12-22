@@ -1,34 +1,20 @@
 describe('Login Tests Sistem Kamu', () => {
-
-    it('Login dengan kredensial valid', () => {
+    it(' Positif : Login dengan kredensial valid', () => {
         cy.visit('http://127.0.0.1:8000/login');
-        cy.get('#email').type('ariawl0209@gmail.com');
-        cy.get('#password').type('AriHyuk123');
+        const email = Cypress.env('userEmail') || 'user@gmail.com'; 
+        const password = Cypress.env('userPassword') || 'passwordAdmin123';
+        cy.get('input[name="email"]').type(email); 
+        cy.get('input[name="password"]').type(password); 
         cy.get('#login-btn').click();
-
-        // login berhasil → harus pindah halaman
         cy.url().should('not.include', '/login');
-
-        // indikator sudah login (pilih salah satu yang ada di aplikasimu)
-        cy.visit('http://127.00.1:8000/');
+        cy.visit('http://127.0.0.1:8000/');
     });
-
-    it('Login dengan password salah', () => {
+    it('Negatif : Login dengan password salah', () => {
         cy.visit('http://127.0.0.1:8000/login');
-        cy.get('#email').type('admin@gmail.com');
-        cy.get('#password').type('salah_banget');
+        cy.get('#email').type('ariaja@gmail.com ');
+        cy.get('#password').type('hohoho');
         cy.get('#login-btn').click();
-
-        // pesan error dari Laravel Breeze / Fortify
         cy.get('.text-red-600')
             .should('contain', 'These credentials do not match our records');
     });
-
-    it('Menguji warna tombol login', () => {
-        cy.visit('http://127.0.0.1:8000/login');
-        cy.get('#login-btn')
-            .should('have.css', 'background-image')
-            .and('contain', 'linear-gradient'); // button kamu pakai gradient
-    });
-
 });

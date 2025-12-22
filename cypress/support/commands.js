@@ -29,3 +29,41 @@ Cypress.Commands.add('login', () => {
   cy.get('input[name="password"]').type('admin123');
   cy.get('button[type="submit"]').click();
 });
+
+Cypress.Commands.add("adminLogin", () => {
+  cy.visit("/login");
+
+  cy.get('input[name="email"], input[type="email"], #email', { timeout: 10000 })
+    .first()
+    .clear()
+    .type(Cypress.env("adminEmail"));
+
+  cy.get('input[name="password"], input[type="password"], #password')
+    .first()
+    .clear()
+    .type(Cypress.env("adminPassword"), { log: false });
+
+  cy.contains('button', /login|Masuk/i).click();
+
+  // tunggu redirect beneran
+  cy.url({ timeout: 10000 }).should("not.include", "/login");
+});
+
+
+Cypress.Commands.add("userLogin", () => {
+  cy.visit("/login");
+
+  cy.get('input[name="email"], input[type="email"], #email', { timeout: 10000 })
+    .first()
+    .clear()
+    .type(Cypress.env("userEmail"));
+
+  cy.get('input[name="password"], input[type="password"], #password')
+    .first()
+    .clear()
+    .type(Cypress.env("userPassword"), { log: false });
+
+  cy.contains('button', /login|Masuk/i).click();
+
+  cy.url({ timeout: 10000 }).should("not.include", "/login");
+});
