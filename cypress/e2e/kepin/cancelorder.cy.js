@@ -3,8 +3,12 @@ describe('Cancel Order Test', () => {
     beforeEach(() => {
         // LOGIN
         cy.visit('http://127.0.0.1:8000/login');
-        cy.get('#email').type('ariawl0209@gmail.com');
-        cy.get('#password').type('AriHyuk123');
+    // Login akun 'ariawl0209'
+    const email = Cypress.env('userEmail') || 'user@gmail.com'; 
+    const password = Cypress.env('userPassword') || 'user123';
+    
+    cy.get('input[name="email"]').type(email); 
+    cy.get('input[name="password"]').type(password); 
         cy.get('#login-btn').click();
         cy.url().should('include', '/');
     });
