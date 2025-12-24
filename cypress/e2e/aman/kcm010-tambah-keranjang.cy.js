@@ -15,8 +15,8 @@ describe("KCM010 - Pengujian Tambah Produk ke Keranjang", () => {
     // Login sebagai User
     cy.get('body').then(($body) => {
         if ($body.find('input[name="email"]').length > 0) {
-            const email = Cypress.env('userEmail') || 'ariawl0209@gmail.com'; 
-            const password = Cypress.env('userPassword') || 'AriHyuk123';
+            const email = Cypress.env('userEmail') || 'user123@gmail.com'; 
+            const password = Cypress.env('userPassword') || 'password1123';
             cy.get('input[name="email"]').type(email); 
             cy.get('input[name="password"]').type(password); 
             cy.get('button[type="submit"]').click();
