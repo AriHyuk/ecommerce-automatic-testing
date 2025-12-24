@@ -1,10 +1,5 @@
 describe('KCM008 - Pengujian Booking User (Positif & Negatif)', () => {
 
-    //
-    // ──────────────────────────────────────────────
-    //               TEST CASE POSITIF
-    // ──────────────────────────────────────────────
-    //
     it('KCM008-POSITIF: User berhasil memilih unit dan membooking properti', () => {
 
         // 1. Login sebagai user
@@ -52,8 +47,6 @@ describe('KCM008 - Pengujian Booking User (Positif & Negatif)', () => {
         // 6. Submit form booking
         cy.contains('Ajukan Penyewaan')
             .click({ force: true });
-        
-
         
 
     });
