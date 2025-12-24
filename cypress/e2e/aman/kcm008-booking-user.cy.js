@@ -49,6 +49,11 @@ describe('KCM008 - Pengujian Booking User (Positif & Negatif)', () => {
         // Durasi sewa
         cy.get('#duration').clear().type(2);
 
+        // 6. Submit form booking
+        cy.contains('Ajukan Penyewaan')
+            .click({ force: true });
+        
+
         
 
     });
